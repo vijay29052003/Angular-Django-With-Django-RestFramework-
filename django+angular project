@@ -1,0 +1,606 @@
+School Management System CRUD operations Using Angular & Django With Django RestFramework:
+=========================================================================================
+Project Requirement
+===========================
+FrontEnd Framework:TypeScript & Angular & Bootstrap
+BackEnd Framework:Django & Django_Rest_Framework
+DataBase:MySQL database with XAMPP
+IDET: Visual Studio Code
+API TOOL:POSTMEN
+Operations:Curd Operations
+===========================
+
+Step_1:
+=======
+pip install django==3.2
+
+Step_2:
+=======
+Create django project name as follows
+
+django-admin startproject SchoolManagementSystem
+
+Step_3:
+=======
+XAMPP MUST BE THERE IN YOUR O/S
+
+pip install pymysql if any problem hit following command
+
+pip install pymysql --upgrade
+
+Step_4:
+======
+Create the virtual environment for project Development
+
+Create virtaul environment inside Work_Space_Area IHUB_LIVE_PROJECTS following 
+command
+
+python -m venv Env
+
+To activate VM hit following command
+
+cd Env\Scripts
+
+activate
+
+Step_5:
+======
+Now you can see the Virtual Environment is activated successfully. 
+then type the following command. come to backward
+
+cd ../..
+
+
+Step_6:
+======
+Install django framework on the top of VM machine
+
+pip install django==3.2
+
+If any problem at time of installing django on VM update the 
+pip command
+
+
+
+
+Step_7:
+========
+Creating an application in SchoolManagementSystem
+
+python manage.py startapp StudentApp
+
+Step_8:
+=======
+StudentApp we have to added in to the setting.py
+
+ 'StudentApp.apps.StudentappConfig'
+
+SchoolManagementSystem---->StudentApp---->models.py:
+===================================================
+from django.db import models
+
+class Student(models.Model):
+    name = models.CharField(max_length = 255)
+    address = models.CharField(max_length = 255)
+    fee = models.IntegerField()
+
+
+Step_9: --->For FrontEnd Integration(Angular)
+====================================
+pip install django-cors-headers
+
+
+Step_10: --->For RestFulAPI development
+=======================================
+pip install djangorestframework
+
+Step_11:
+========
+Add the dependencies in to the settings.py inside the INSTALLED_APPS
+
+'corsheaders',
+'rest_framework',
+'StudentApp.apps.StudentappConfig'
+
+
+step_12:
+========
+in to the settings.py inside the MIDDLEWARE add this dependencies
+
+ 'corsheaders.middleware.CorsMiddleware',
+
+Step_13:
+========
+in to the settings.py you have add CORS_ORIGIN Setting make both as true
+
+Inside the setting.py  we need put in last
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_ALL_HEADERS=True
+
+
+Step_14:
+========
+StudentApp--->serializers.py:
+============================
+from rest_framework import serializers
+from StudentApp.models import Student
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = '__all__'
+
+
+Step_15:
+========
+Install the database Url  type by the following command
+
+pip install dj-database-url
+
+Step_16:
+=======
+After that Install the mysqlclient
+
+pip install mysqlclient
+
+Note: Install latest pip version for mysqlclient
+================================================
+python.exe -m pip install pip==21.3.1
+
+Reprocess
+=========
+pip install mysqlclient
+
+If mysqlclient is not installing using following code in setting.py
+
+Otherwise Add this following code in setting.py:
+================================================
+import pymysql
+pymysql.install_as_MySQLdb()
+
+step_17:
+========
+After that Configure the database connection on settings.py
+settings.py
+
+Create the database name as sms_444 in side the MYSQL database
+
+import dj_database_url
+
+DATABASES['default'] = dj_database_url.parse('mysql://root@localhost/sms_999')
+
+
+Step_18:
+=======
+After that run the migration command
+
+python manage.py makemigrations
+
+
+Step_19:
+========
+After done successfully. then type following command
+
+python manage.py migrate
+
+Step_19:
+========
+
+SchoolManagementSystem--->StudentApp--->Views.py:
+=================================================
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import JSONParser
+from django.http.response import JsonResponse
+from StudentApp.serializers import StudentSerializer
+from StudentApp.models import Student
+
+@csrf_exempt
+def studentApi(request,id=0):
+    if request.method=='GET':
+        student = Student.objects.all()
+        student_serializer=StudentSerializer(student,many=True)
+        return JsonResponse(student_serializer.data,safe=False)
+    elif request.method=='POST':
+        student_data=JSONParser().parse(request)
+        student_serializer=StudentSerializer(data=student_data)
+        if student_serializer.is_valid():
+            student_serializer.save()
+            return JsonResponse("Added Successfully",safe=False)
+        return JsonResponse("Failed to Add",safe=False)
+    elif request.method=='PUT':
+        student_data=JSONParser().parse(request)
+        student=Student.objects.get(id=id)
+        student_serializer=StudentSerializer(student,data=student_data)
+        if student_serializer.is_valid():
+            student_serializer.save()
+            return JsonResponse("Updated Successfully",safe=False)
+        return JsonResponse("Failed to Update")
+    elif request.method=='DELETE':
+        student=Student.objects.get(id=id)
+        student.delete()
+        return JsonResponse("Deleted Successfully",safe=False)
+
+
+
+Step_20:
+========
+from django.contrib import admin
+from django.urls import path
+from django.conf.urls import url
+from StudentApp import views
+
+urlpatterns = [
+    url(r'^student$',views.studentApi),
+    url(r'^student$',views.studentApi),
+    url(r'^student/([0-9]+)$',views.studentApi),
+    path('admin/', admin.site.urls),
+]
+
+
+Adding the Angular Framework to perform CRUD Operations:
+=======================================================
+
+Step_1:
+======
+C:\Users\Admin\Desktop\IHUB_LIVE_PROJECTS\SchoolManagementSystem
+
+Creating angular applicaiton as follows:
+========================================
+ng new FrontEnd
+
+select the options as SCSS  --->Style Sheet
+
+Step_2:
+======
+Create a custom component using as following command
+
+ng g c crud
+
+FrontEnd --->src--->app--->app.module.ts
+=========================================
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { CrudComponent } from './crud/crud.component';
+import { FormsModule  } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CrudComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule
+
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+
+FrontEnd--->src---->crud---->crud.component.html:
+================================================
+<hr>
+<div class="container">
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="text-center text-white bg-danger">ISB STUDENTS MANAGEMENTS SYSTEM</h1>
+       <hr>
+       <div class="container mt-4">
+        <h3 class="text-center text-white bg-success">ADD STUDENTS DETAILS</h3>
+        <div class="card">
+               
+    <form>
+       
+        <div class="form-group">
+          <label>Student Name</label>
+          <input type="text"  [(ngModel)]="name" [ngModelOptions]="{standalone: true}"   class="form-control" id="studentname" name="studentname" placeholder="Enter Name">
+        </div>
+        
+        <div class="form-group">
+            <label >Address</label>
+            <input type="text" [(ngModel)]="address" [ngModelOptions]="{standalone: true}" class="form-control" id="studentaddress" name="studentaddress" placeholder="Enter Address">
+          </div>
+    
+          <div class="form-group">
+            <label >Fee</label>
+            <input type="text" [(ngModel)]="fee" [ngModelOptions]="{standalone: true}" class="form-control" id="fee" name="text" placeholder="Enter Fee">
+          </div>
+    
+          <button type="submit" class="btn btn-success btn-lg offset-md-5" (click)="saveRecords()" >Save</button> &nbsp;
+          <button type="submit" class="btn btn-success btn-lg" (click)="UpdateRecords()" >Update</button>
+      </form>
+    </div>
+    </div>
+    
+    <div>
+        <div class="container mt-4" >
+            <h3 class="text-center text-white bg-success">STUDENT INFORMATION</h3>
+            <br>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">     
+            <tr>
+                <th scope="col">NAME</th>
+                <th scope="col">ADDRESS</th>
+                <th scope="col">FEE</th>
+                <th scope="col">OPTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let StudentItem of StudentArray">
+               
+                <td>{{StudentItem.name}}</td>
+                <td>{{StudentItem.address }}</td>
+                <td>{{StudentItem.fee }}</td>
+     
+                <td>
+                    <button type="button" class="btn btn-success" (click)="setUpdate(StudentItem)">EDIT</button>&nbsp;
+                    <button type="button" class="btn btn-success" (click)="setDelete(StudentItem)">DELETE</button>
+                </td>
+              </tr>
+              
+            </tbody>
+          </table>
+        </div>
+
+        
+       <hr>
+
+    </div>
+</div>
+</div>
+<hr>
+
+With Boostrap plugin ----->Crud.component.html:
+===================================
+<!doctype html>
+<html lang="en">
+  <head>
+ 
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <title>PAGE LAYOUTS</title>
+  </head>
+  <body>
+    <hr>
+<div class="container">
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="text-center text-white bg-danger">ISB STUDENTS MANAGEMENTS SYSTEM</h1>
+       <hr>
+       <div class="container mt-4">
+        <h3 class="text-center text-white bg-success">ADD STUDENTS DETAILS</h3>
+        <div class="card">
+               
+    <form>
+       
+        <div class="form-group">
+          <label>Student Name</label>
+          <input type="text"  [(ngModel)]="name" [ngModelOptions]="{standalone: true}"   class="form-control" id="studentname" name="studentname" placeholder="Enter Name">
+        </div>
+        
+        <div class="form-group">
+            <label >Address</label>
+            <input type="text" [(ngModel)]="address" [ngModelOptions]="{standalone: true}" class="form-control" id="studentaddress" name="studentaddress" placeholder="Enter Address">
+          </div>
+    
+          <div class="form-group">
+            <label >Fee</label>
+            <input type="text" [(ngModel)]="fee" [ngModelOptions]="{standalone: true}" class="form-control" id="fee" name="text" placeholder="Enter Fee">
+          </div>
+    
+          <button type="submit" class="btn btn-success btn-lg offset-md-5" (click)="saveRecords()" >Save</button> &nbsp;
+          <button type="submit" class="btn btn-success btn-lg" (click)="UpdateRecords()" >Update</button>
+      </form>
+    </div>
+    </div>
+    
+    <div>
+        <div class="container mt-4" >
+            <h3 class="text-center text-white bg-success">STUDENT INFORMATION</h3>
+            <br>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">     
+            <tr>
+                <th scope="col">NAME</th>
+                <th scope="col">ADDRESS</th>
+                <th scope="col">FEE</th>
+                <th scope="col">OPTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let StudentItem of StudentArray">
+               
+                <td>{{StudentItem.name}}</td>
+                <td>{{StudentItem.address }}</td>
+                <td>{{StudentItem.fee }}</td>
+     
+                <td>
+                    <button type="button" class="btn btn-success" (click)="setUpdate(StudentItem)">EDIT</button>&nbsp;
+                    <button type="button" class="btn btn-success" (click)="setDelete(StudentItem)">DELETE</button>
+                </td>
+              </tr>
+              
+            </tbody>
+          </table>
+        </div>
+
+        
+       <hr>
+
+    </div>
+</div>
+</div>
+<hr>
+  
+
+ 
+
+ <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+ 
+
+
+FrontEnd--->src---->crud---->crud.component.ts:
+===============================================
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject } from 'rxjs';
+
+@Component({
+  selector: 'app-crud',
+  templateUrl: './crud.component.html',
+  styleUrls: ['./crud.component.scss']
+})
+export class CrudComponent {
+  StudentArray : any[] = [];
+ 
+  name: string ="";
+  address: string ="";
+  fee: Number =0;
+ 
+  currentStudentID = "";
+ 
+  constructor(private http: HttpClient )
+  {
+    this.getAllStudent();
+ 
+  }
+ 
+  saveRecords()
+  {
+  
+    let bodyData = {
+      "name" : this.name,
+      "address" : this.address,
+      "fee" : this.fee
+    };
+ 
+    this.http.post("http://127.0.0.1:8000/student",bodyData).subscribe((resultData: any)=>
+    {
+        console.log(resultData);
+        alert("Student Registered Successfully");
+        this.getAllStudent();
+    });
+  }
+ 
+ 
+  getAllStudent()
+  {
+    this.http.get("http://127.0.0.1:8000/student")
+    .subscribe((resultData: any)=>
+    {
+        console.log(resultData);
+        this.StudentArray = resultData;
+    });
+  }
+ 
+ 
+  setUpdate(data: any)
+  {
+   this.name = data.name;
+   this.address = data.address;
+   this.fee = data.fee;
+   this.currentStudentID = data.id;
+   
+  }
+ 
+ 
+ 
+  UpdateRecords()
+  {
+    let bodyData = 
+    {
+      "name" : this.name,
+      "address" : this.address,
+      "fee" : this.fee
+    };
+    
+    this.http.put("http://127.0.0.1:8000/student/"+ this.currentStudentID , bodyData).subscribe((resultData: any)=>
+    {
+        console.log(resultData);
+        alert("Student Registered Updateddd")
+        this.name = '';
+        this.address = '';
+        this.fee  = 0;
+        this.getAllStudent();
+    });
+  }
+
+
+  setDelete(data: any)
+  {
+    this.http.delete("http://127.0.0.1:8000/student"+ "/"+ data.id).subscribe((resultData: any)=>
+    {
+        console.log(resultData);
+        alert("Student Deletedddd")
+        this.getAllStudent();
+    });
+
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
